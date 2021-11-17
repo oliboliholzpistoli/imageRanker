@@ -31,3 +31,5 @@ src/ImageFrame.java
 src/TestMain.java
 testImages/2.png
 .idea/*
+out/production/imageRanker/META-INF/MANIFEST.MF
+src/META-INF/MANIFEST.MF
