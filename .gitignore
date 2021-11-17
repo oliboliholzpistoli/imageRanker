@@ -30,3 +30,4 @@ imageRanker.iml
 src/ImageFrame.java
 src/TestMain.java
 testImages/2.png
+.idea/
