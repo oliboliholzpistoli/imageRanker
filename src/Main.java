@@ -8,11 +8,14 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 public class Main {
 
     static int CHOICE = -1;
     static int SQUARE_SIZE = 1000;
+    static JPanel CURRENT_PANEL = null;
+    static JFrame FRAME = new JFrame();
 
     private static JPanel panelCreator(File first, File second) throws IOException {
         JPanel p = new JPanel();
@@ -63,10 +66,65 @@ public class Main {
         return output;
     }
 
+    private static int showChoice(File first, File second) throws IOException, InterruptedException {
+        if (CURRENT_PANEL != null) {
+            FRAME.remove(CURRENT_PANEL);
+        }
+        JPanel newPanel = panelCreator(first, second);
+        CURRENT_PANEL = newPanel;
+        FRAME.add(newPanel);
+        FRAME.setVisible(true);
+
+        while(CHOICE == -1) {
+            Thread.sleep(100);
+        }
+
+        int output = CHOICE;
+        CHOICE = -1;
+        return  output;
+    }
+
+    private static ArrayList<File> mergeSort(ArrayList<File> files) throws IOException, InterruptedException {
+        ArrayList<File> first = new ArrayList<>(files.subList(0,files.size()/2));
+        ArrayList<File> second = new ArrayList<>(files.subList(files.size()/2,files.size()));
+        ArrayList<File> output = new ArrayList<>();
+        if(first.size() > 1){
+            first = mergeSort(first);
+        }
+        if (second.size() > 1){
+            second = mergeSort(second);
+        }
+        int i = 0;
+        int e = 0;
+        int choice;
+        do {
+            if (i == first.size()){
+                output.add(second.get(e));
+                e++;
+            } else if (e == second.size()){
+                output.add(first.get(i));
+                i++;
+            } else {
+                choice = showChoice(first.get(i), second.get(e));
+                if (choice == 0){
+                    output.add(second.get(e));
+                    e++;
+                } else {
+                    output.add(first.get(i));
+                    i++;
+                }
+            }
+        } while (i < first.size() || e < second.size());
+        System.out.println(files.size());
+        System.out.println(first.size());
+        System.out.println(second.size());
+        return output;
+    }
+
     public static void main(String[] args) {
         try {
             JFrame f = new JFrame();
-            f.setLayout(new BorderLayout());
+            FRAME.setLayout(new BorderLayout());
             JFileChooser fc = new JFileChooser();
             fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             fc.setCurrentDirectory(new File("D:Libraries/Pictures/"));
@@ -97,72 +155,23 @@ public class Main {
 
             System.out.println("Imagecount: " + images.length);
 
-            f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            f.setSize(SQUARE_SIZE * 2, SQUARE_SIZE);
+            FRAME.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            FRAME.setSize(SQUARE_SIZE * 2, SQUARE_SIZE);
 
-            ArrayList<File> thisRound = new ArrayList<>(Arrays.asList(images));
-            ArrayList<File> nextRound = new ArrayList<>();
+            ArrayList<File> fileList = new ArrayList<>(Arrays.asList(images));
 
-            File first;
-            File second;
+            int maxTop = Math.min(fileList.size(), 10);
 
-            JPanel oldPanel;
-            JPanel newPanel = null;
-            int roundCount = 1;
+            //Merge Sort
+            ArrayList<File> sortedList = mergeSort(fileList);
 
-            ArrayList<File> topImages = new ArrayList<>();
-            int maxTop = Math.min(thisRound.size(), 10);
-            int absoluteIndex = 0;
-            int z = thisRound.size();
-            do {
-                absoluteIndex+=z/2;
-                z = z/2 + z%2;
-                System.out.println(z);
-            }while(z!=1);
 
-            do {
-                System.out.println("########## Round NR:"+ roundCount++ + "##########");
-                for (int i = 0; i < thisRound.size(); i++) {
-                    first = thisRound.get(i);
-                    System.out.println("First Image: " + first.getPath());
-                    i++;
-                    if (i < thisRound.size()) {
-                        second = thisRound.get(i);
-                        System.out.println("Second Image: " + second.getPath());
-                    } else {
-                        nextRound.add(first);
-                        break;
-                    }
-                    oldPanel = newPanel;
-                    newPanel = panelCreator(first, second);
-                    if (oldPanel != null) {
-                        f.remove(oldPanel);
-                    }
-                    f.add(newPanel);
-                    f.setVisible(true);
-                    while(CHOICE == -1) {
-                        Thread.sleep(100);
-                    }
-                    if (CHOICE == 0){
-                        nextRound.add(first);
-                    } else {
-                        nextRound.add(second);
-                    }
-                    if (absoluteIndex <= maxTop){
-                        topImages.add(CHOICE==0?second:first);
-                    }
-                    absoluteIndex--;
-                    CHOICE = -1;
-                }
-                thisRound = new ArrayList<>(nextRound);
-                nextRound.clear();
-            } while (thisRound.size() > 1);
-            topImages.add(thisRound.get(0));
-            f.remove(newPanel);
-            f.setLayout(new BorderLayout());
-            JLabel l = new JLabel(new ImageIcon(resizeImage(ImageIO.read(thisRound.get(0)))));
-            f.add(l);
-            f.setVisible(true);
+            ArrayList<File> topImages = new ArrayList<>(new ArrayList<>(sortedList.subList(0, sortedList.size())));
+            FRAME.remove(CURRENT_PANEL);
+            FRAME.setLayout(new BorderLayout());
+            JLabel l = new JLabel(new ImageIcon(resizeImage(ImageIO.read(sortedList.get(sortedList.size()-1)))));
+            FRAME.add(l);
+            FRAME.setVisible(true);
             new File("/top"+maxTop).mkdirs();
 
             int fileCount = maxTop;
