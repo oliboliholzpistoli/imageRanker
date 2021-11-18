@@ -33,3 +33,4 @@ testImages/2.png
 .idea/*
 out/production/imageRanker/META-INF/MANIFEST.MF
 src/META-INF/MANIFEST.MF
+src/main/java/META-INF/MANIFEST.MF
