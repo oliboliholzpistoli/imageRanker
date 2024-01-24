@@ -165,7 +165,6 @@ public class ImageSorter {
         try {
             JFileChooser fc = new JFileChooser();
             fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            fc.setCurrentDirectory(new File("D:Libraries/Pictures/"));
             int option = fc.showOpenDialog(frame);
             File imageFolderPath = null;
             if (option == JFileChooser.APPROVE_OPTION) {
@@ -197,9 +196,7 @@ public class ImageSorter {
             for (File image : images) {
                 fileList.add(new ImageComparer(image));
             }
-
-            //ArrayList<File> fileList = new ArrayList<>(Arrays.asList(images));
-
+            
             int maxTop = Math.min(fileList.size(), TOP_NUMBER);
 
             //Merge Sort
